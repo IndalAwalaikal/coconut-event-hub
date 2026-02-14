@@ -15,6 +15,8 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEvents from "./pages/admin/AdminEvents";
 import AdminRegistrants from "./pages/admin/AdminRegistrants";
+import AdminDocumentations from "./pages/admin/AdminDocumentations";
+import AdminPosters from "./pages/admin/AdminPosters";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +44,8 @@ const App = () => (
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="events" element={<AdminEvents />} />
             <Route path="registrants" element={<AdminRegistrants />} />
+            <Route path="documentations" element={<AdminDocumentations />} />
+            <Route path="posters" element={<AdminPosters />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

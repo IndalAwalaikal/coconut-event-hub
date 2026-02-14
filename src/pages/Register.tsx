@@ -1,145 +1,552 @@
-import { useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockEvents, categoryLabels, type EventCategory } from "@/data/mockData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { categoryLabels, type EventCategory } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, Upload } from "lucide-react";
+import {
+  CheckCircle,
+  Upload,
+  User,
+  Phone,
+  Building2,
+  Calendar,
+  ArrowRight,
+  FileText,
+  Sparkles,
+  AlertCircle,
+  CreditCard,
+  Instagram,
+} from "lucide-react";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
   const preselectedEvent = searchParams.get("event");
-  const preEvent = mockEvents.find((e) => e.id === preselectedEvent);
 
-  const [category, setCategory] = useState<EventCategory | "">(preEvent?.category ?? "");
+  const API = import.meta.env.VITE_API_URL || "";
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [category, setCategory] = useState<EventCategory | "">("");
   const [eventId, setEventId] = useState(preselectedEvent ?? "");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [institution, setInstitution] = useState("");
   const [fileName, setFileName] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API}/api/events`);
+        if (!res.ok) throw new Error("failed to fetch events");
+        const data = await res.json();
+        if (Array.isArray(data)) setEvents(data);
+        // if preselected event exists, set category and eventId
+        if (preselectedEvent && Array.isArray(data)) {
+          const pre = data.find((e: any) => e.id === preselectedEvent);
+          if (pre) {
+            setCategory(pre.category);
+            setEventId(preselectedEvent);
+          }
+        }
+      } catch (err) {
+        console.warn(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, [API, preselectedEvent]);
+
   const availableEvents = useMemo(
-    () => mockEvents.filter((e) => e.category === category && e.available && e.registered < e.quota),
-    [category]
+    () =>
+      events.filter(
+        (e) => e.category === category && e.available && e.registered < e.quota,
+      ),
+    [events, category],
   );
 
   const unavailableEvents = useMemo(
-    () => mockEvents.filter((e) => e.category === category && (!e.available || e.registered >= e.quota)),
-    [category]
+    () =>
+      events.filter(
+        (e) =>
+          e.category === category && (!e.available || e.registered >= e.quota),
+      ),
+    [events, category],
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const selectedEvent = events.find((e) => e.id === eventId);
+  const isPaidEvent = selectedEvent?.eventType === "paid";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category || !eventId || !name || !whatsapp || !institution) {
-      toast({ title: "Error", description: "Harap lengkapi semua field yang wajib diisi", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Harap lengkapi semua field yang wajib diisi",
+        variant: "destructive",
+      });
       return;
     }
-    setSubmitted(true);
-    toast({ title: "Pendaftaran Berhasil!", description: "Data pendaftaran Anda telah tersimpan." });
+
+    // build multipart/form-data
+    const fd = new FormData();
+    fd.append("event_id", eventId);
+    fd.append("name", name);
+    fd.append("whatsapp", whatsapp);
+    fd.append("institution", institution);
+    fd.append("file_name", fileName || "");
+    if (proofFile) fd.append("proof", proofFile);
+
+    try {
+      const res = await fetch(`${API}/api/registrations`, {
+        method: "POST",
+        body: fd,
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Pendaftaran gagal");
+      }
+      const data = await res.json();
+      setSubmitted(true);
+      toast({
+        title: "Pendaftaran Berhasil!",
+        description: "Data pendaftaran Anda telah tersimpan.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    }
   };
 
   if (submitted) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center py-12">
-        <div className="text-center animate-slide-up">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
-            <CheckCircle className="h-10 w-10 text-emerald-600" />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4 py-16 md:py-24">
+          <div className="mx-auto max-w-2xl">
+            <div className="text-center animate-slide-up">
+              {/* Success Icon */}
+              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-6 shadow-lg shadow-green-500/20">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600">
+                  <CheckCircle
+                    className="h-12 w-12 text-white"
+                    strokeWidth={2.5}
+                  />
+                </div>
+              </div>
+
+              {/* Success Message */}
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <span className="bg-gradient-to-r from-[#3b82f6] via-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
+                  Pendaftaran Berhasil!
+                </span>
+              </h2>
+              <p className="text-lg text-gray-600 mb-3">
+                Terima kasih,{" "}
+                <span className="font-semibold text-gray-900">{name}</span>!
+              </p>
+              <p className="text-gray-600 max-w-md mx-auto mb-8">
+                Pendaftaran Anda untuk event{" "}
+                <span className="font-semibold text-[#2563eb]">
+                  {selectedEvent?.title}
+                </span>{" "}
+                telah berhasil. Informasi lebih lanjut akan dikirim melalui
+                WhatsApp.
+              </p>
+
+              {/* Info Cards */}
+              <div className="grid gap-4 md:grid-cols-2 mb-8 text-left">
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] text-white shrink-0">
+                      <Calendar className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Event</p>
+                      <p className="font-semibold text-gray-900 text-sm">
+                        {selectedEvent?.title}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white shrink-0">
+                      <Phone className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">WhatsApp</p>
+                      <p className="font-semibold text-gray-900 text-sm">
+                        {whatsapp}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white hover:text-white font-semibold transition-all hover:scale-105 shadow-lg shadow-blue-500/25"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setCategory("");
+                    setEventId("");
+                    setName("");
+                    setWhatsapp("");
+                    setInstitution("");
+                    setFileName("");
+                    setProofFile(null);
+                  }}
+                >
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Daftar Event Lain
+                </Button>
+                <Link to="/events">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900 font-semibold transition-all"
+                  >
+                    Lihat Event Lainnya
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
-          <h2 className="mt-6 font-display text-2xl font-bold">Pendaftaran Berhasil!</h2>
-          <p className="mt-2 text-muted-foreground">
-            Terima kasih telah mendaftar. Informasi lebih lanjut akan dikirim melalui WhatsApp.
-          </p>
-          <Button className="mt-6 gradient-primary border-0 text-primary-foreground" onClick={() => setSubmitted(false)}>
-            Daftar Event Lain
-          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-2xl">
-          <h1 className="font-display text-3xl font-bold text-glow-sm md:text-4xl">Pendaftaran Event</h1>
-          <p className="mt-2 text-muted-foreground">Isi form berikut untuk mendaftar kegiatan COCONUT Computer Club</p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6 rounded-2xl border bg-card p-6 md:p-8">
-            {/* Category */}
-            <div className="space-y-2">
-              <Label>Kategori Event *</Label>
-              <Select value={category} onValueChange={(v) => { setCategory(v as EventCategory); setEventId(""); }}>
-                <SelectTrigger><SelectValue placeholder="Pilih kategori event" /></SelectTrigger>
-                <SelectContent>
-                  {(Object.entries(categoryLabels) as [EventCategory, string][]).map(([val, label]) => (
-                    <SelectItem key={val} value={val}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Event */}
-            <div className="space-y-2">
-              <Label>Pilih Event *</Label>
-              <Select value={eventId} onValueChange={setEventId} disabled={!category}>
-                <SelectTrigger><SelectValue placeholder={category ? "Pilih event" : "Pilih kategori terlebih dahulu"} /></SelectTrigger>
-                <SelectContent>
-                  {availableEvents.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>
-                  ))}
-                  {unavailableEvents.map((e) => (
-                    <SelectItem key={e.id} value={e.id} disabled>
-                      {e.title} — {!e.available ? "Belum tersedia" : "Kuota penuh"}
-                    </SelectItem>
-                  ))}
-                  {category && availableEvents.length === 0 && unavailableEvents.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">Tidak ada event</div>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Name */}
-            <div className="space-y-2">
-              <Label>Nama Lengkap *</Label>
-              <Input placeholder="Masukkan nama lengkap" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-
-            {/* WhatsApp */}
-            <div className="space-y-2">
-              <Label>Nomor WhatsApp *</Label>
-              <Input placeholder="Contoh: 081234567890" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
-            </div>
-
-            {/* Institution */}
-            <div className="space-y-2">
-              <Label>Asal Kampus / Instansi / Sekolah *</Label>
-              <Input placeholder="Masukkan asal instansi" value={institution} onChange={(e) => setInstitution(e.target.value)} />
-            </div>
-
-            {/* Upload */}
-            <div className="space-y-2">
-              <Label>Upload Bukti / Persyaratan</Label>
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-border p-6 text-center transition-colors hover:border-primary/50 hover:bg-muted/50">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <div className="text-left">
-                  <p className="text-sm font-medium">{fileName || "Klik untuk upload gambar"}</p>
-                  <p className="text-xs text-muted-foreground">JPG, PNG, atau PDF (maks. 5MB)</p>
-                </div>
-                <input type="file" className="hidden" accept="image/*,.pdf" onChange={(e) => setFileName(e.target.files?.[0]?.name || "")} />
-              </label>
-            </div>
-
-            <Button type="submit" size="lg" className="w-full gradient-primary border-0 text-primary-foreground font-semibold shadow-lg hover:opacity-90 transition-opacity">
-              Kirim Pendaftaran
-            </Button>
-          </form>
+    <div className="min-h-screen bg-white">
+      {/* Header Section - Dark Navy seperti Index/Events */}
+      <section className="relative py-16 md:py-20 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a1628] border-b border-gray-800/50">
+        {/* Background Pattern */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzYjgyZjYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNk0yNCA0MGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTYiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
         </div>
-      </div>
+
+        {/* Glowing Orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute -right-1/4 top-0 h-96 w-96 rounded-full bg-gradient-to-l from-[#1e40af]/20 to-[#2563eb]/20 blur-3xl animate-pulse"
+            style={{
+              animationDelay: "0.5s",
+              boxShadow: "0 0 100px 50px rgba(30, 64, 175, 0.2)",
+            }}
+          />
+          <div
+            className="absolute left-1/4 bottom-0 h-96 w-96 rounded-full bg-gradient-to-t from-[#1d4ed8]/20 to-[#2563eb]/20 blur-3xl animate-pulse"
+            style={{
+              animationDelay: "1.5s",
+              boxShadow: "0 0 100px 50px rgba(29, 78, 216, 0.2)",
+            }}
+          />
+        </div>
+
+        <div className="container relative mx-auto px-4">
+          <div className="mx-auto max-w-3xl text-center">
+            {/* Badge */}
+            <div
+              className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2 text-sm text-white border border-white/20 animate-slide-up"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <FileText className="h-4 w-4" />
+              <span className="font-medium">Form Pendaftaran Event</span>
+            </div>
+
+            {/* Heading */}
+            <h1
+              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 animate-slide-up drop-shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+              style={{ animationDelay: "0.2s" }}
+            >
+              <span className="bg-gradient-to-r from-[#3b82f6] via-[#2563eb] to-[#1e40af] bg-clip-text text-transparent">
+                Daftar Event Sekarang
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p
+              className="text-lg md:text-xl text-gray-300 animate-slide-up"
+              style={{ animationDelay: "0.3s" }}
+            >
+              Isi formulir di bawah untuk mendaftar kegiatan COCONUT Computer
+              Club dan tingkatkan skill teknologimu
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Form Section */}
+      <section className="py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-3xl">
+            {/* Info Alert */}
+            <div className="mb-8 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 flex items-start gap-4 shadow-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] text-white">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-gray-900 mb-1">
+                  Petunjuk Pengisian Form
+                </p>
+                <p className="text-gray-600">
+                  Pastikan semua data yang diisi sudah benar. Field bertanda{" "}
+                  <span className="text-red-500 font-semibold">*</span> wajib
+                  diisi.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Form Card - Event Info */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
+                <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <div className="h-10 w-1.5 bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] rounded-full" />
+                  Informasi Event
+                </h2>
+
+                <div className="space-y-5">
+                  {/* Category */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                      Kategori Event <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={category}
+                      onValueChange={(v) => {
+                        setCategory(v as EventCategory);
+                        setEventId("");
+                      }}
+                    >
+                      <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all">
+                        <SelectValue placeholder="Pilih kategori event" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(
+                          Object.entries(categoryLabels) as [
+                            EventCategory,
+                            string,
+                          ][]
+                        ).map(([val, label]) => (
+                          <SelectItem key={val} value={val}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Event */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                      Pilih Event <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={eventId}
+                      onValueChange={setEventId}
+                      disabled={!category}
+                    >
+                      <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all">
+                        <SelectValue
+                          placeholder={
+                            category
+                              ? "Pilih event"
+                              : "Pilih kategori terlebih dahulu"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableEvents.map((e) => (
+                          <SelectItem key={e.id} value={e.id}>
+                            <div className="flex items-center gap-2">
+                              <span>{e.title}</span>
+                              <span className="text-xs text-green-600 font-medium">
+                                • Tersedia
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                        {unavailableEvents.map((e) => (
+                          <SelectItem key={e.id} value={e.id} disabled>
+                            {e.title} —{" "}
+                            {!e.available ? "Belum tersedia" : "Kuota penuh"}
+                          </SelectItem>
+                        ))}
+                        {category &&
+                          availableEvents.length === 0 &&
+                          unavailableEvents.length === 0 && (
+                            <div className="px-3 py-2 text-sm text-gray-500">
+                              Tidak ada event untuk kategori ini
+                            </div>
+                          )}
+                      </SelectContent>
+                    </Select>
+                    {selectedEvent && (
+                      <div className="mt-3 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm">
+                        <p className="font-semibold text-gray-900 mb-2">
+                          {selectedEvent.title}
+                        </p>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {selectedEvent.date}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            📊 {selectedEvent.registered}/{selectedEvent.quota}{" "}
+                            terdaftar
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal Data Card */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
+                <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <div className="h-10 w-1.5 bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] rounded-full" />
+                  Data Pribadi
+                </h2>
+
+                <div className="space-y-5">
+                  {/* Name */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Nama Lengkap <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      placeholder="Masukkan nama lengkap Anda"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-12 border-2 border-gray-200 focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all"
+                    />
+                  </div>
+
+                  {/* WhatsApp */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Nomor WhatsApp <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      placeholder="Contoh: 081234567890"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      className="h-12 border-2 border-gray-200 focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all"
+                    />
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      Format: 08xxxxxxxxxx tanpa spasi atau tanda baca
+                    </p>
+                  </div>
+
+                  {/* Institution */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      Asal Kampus / Instansi / Sekolah{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      placeholder="Masukkan asal instansi"
+                      value={institution}
+                      onChange={(e) => setInstitution(e.target.value)}
+                      className="h-12 border-2 border-gray-200 focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/10 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Card */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
+                <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <div className="h-10 w-1.5 bg-gradient-to-b from-[#2563eb] to-[#1d4ed8] rounded-full" />
+                  Dokumen Pendukung
+                </h2>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-gray-700">
+                    {isPaidEvent
+                      ? "Upload Bukti Pembayaran"
+                      : "Upload Bukti Follow Instagram COCONUT"}
+                  </Label>
+                  <label className="group flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 transition-all hover:border-[#2563eb] hover:bg-blue-50">
+                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-white border-2 border-gray-200 group-hover:border-[#2563eb] group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-white transition-all">
+                      {isPaidEvent ? (
+                        <CreditCard className="h-7 w-7 text-gray-400 group-hover:text-[#2563eb] transition-colors" />
+                      ) : (
+                        <Instagram className="h-7 w-7 text-gray-400 group-hover:text-[#2563eb] transition-colors" />
+                      )}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {fileName || "Klik untuk upload file"}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {isPaidEvent
+                          ? "Upload bukti transfer pembayaran"
+                          : "Upload screenshot follow @coconut_computer_club"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG, atau PDF • Maksimal 5MB
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      name="proof"
+                      className="hidden"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] ?? null;
+                        setProofFile(f);
+                        setFileName(f?.name || "");
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-14 bg-gradient-to-r from-[#2563eb] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white font-bold text-base transition-all hover:scale-[1.02] shadow-lg shadow-blue-500/25"
+                >
+                  Kirim Pendaftaran
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <p className="text-center text-xs text-gray-500 mt-4">
+                  Dengan mendaftar, Anda menyetujui syarat dan ketentuan yang
+                  berlaku
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
