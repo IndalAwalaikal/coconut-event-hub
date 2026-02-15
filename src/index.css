@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 220 40% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 13%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 25% 93%;
+    --secondary-foreground: 220 40% 13%;
+
+    --muted: 214 20% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 25% 89%;
+    --input: 214 25% 89%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --glow-primary: 217 91% 60%;
+    --glow-secondary: 199 89% 48%;
+    --navy: 220 50% 15%;
+    --navy-foreground: 210 20% 98%;
+
+    --sidebar-background: 220 50% 15%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 45% 22%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 40% 25%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 20% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 213 27% 84%;
+    --sidebar-background: 220 50% 8%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 45% 14%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 40% 15%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Space Grotesk", sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow:
+      0 0 20px hsl(217 91% 60% / 0.5),
+      0 0 40px hsl(217 91% 60% / 0.3),
+      0 0 60px hsl(217 91% 60% / 0.15);
+  }
+
+  .text-glow-sm {
+    text-shadow:
+      0 0 10px hsl(217 91% 60% / 0.4),
+      0 0 20px hsl(217 91% 60% / 0.2);
+  }
+
+  .box-glow {
+    box-shadow:
+      0 0 20px hsl(217 91% 60% / 0.15),
+      0 0 40px hsl(217 91% 60% / 0.08);
+  }
+
+  .box-glow-hover {
+    box-shadow:
+      0 0 30px hsl(217 91% 60% / 0.25),
+      0 0 60px hsl(217 91% 60% / 0.12);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%));
+  }
+
+  .gradient-navy {
+    background: linear-gradient(135deg, hsl(220 50% 15%), hsl(220 50% 22%));
+  }
+
+  .gradient-hero {
+    background: linear-gradient(
+      135deg,
+      hsl(220 50% 10%),
+      hsl(220 50% 18%),
+      hsl(217 60% 25%)
+    );
+  }
+
+  /* Ensure media elements don't overflow their containers on small screens */
+  img,
+  video,
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Responsive utility to constrain large content blocks on small screens */
+  .responsive-container {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
