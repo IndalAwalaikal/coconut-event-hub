@@ -1,15 +1,12 @@
-services:
-  frontend:
-    build: .
-    container_name: coconut-frontend
-    ports:
-      - "5173:8080"
-    environment:
-      # Variabel ini akan ditangkap oleh Vite
-      - VITE_API_URL=http://192.168.1.52:8081
-    volumes:
-      # Sinkronisasi kode agar fitur "Hot Reload" Vite tetap jalan
-      - .:/app
-      # Mencegah node_modules di komputermu menimpa yang ada di dalam Docker
-      - /app/node_modules
-    restart: always
+frontend:
+  build: .
+  container_name: coconut-frontend
+  ports:
+    - "5173:5173"   # Sama di host dan container
+  environment:
+    - VITE_API_URL=http://192.168.1.52:8081
+  volumes:
+    - .:/app
+    - /app/node_modules
+  command: npm run dev -- --host 0.0.0.0 --port 5173
+  restart: always
