@@ -6,7 +6,7 @@ services:
       - "5173:8080"
     environment:
       # Variabel ini akan ditangkap oleh Vite
-      - VITE_API_URL=http://localhost:8081
+      - VITE_API_URL=http://192.168.1.52:8081
     volumes:
       # Sinkronisasi kode agar fitur "Hot Reload" Vite tetap jalan
       - .:/app
