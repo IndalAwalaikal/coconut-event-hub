@@ -108,9 +108,6 @@ const AdminLayout = () => {
               className="h-12 w-auto object-contain transition-all duration-300 group-hover:scale-110"
               style={{ filter: "drop-shadow(0 0 12px rgba(96,165,250,0.4))" }}
             />
-            <span className="text-lg font-bold text-gray-300 group-hover:text-white transition-colors tracking-wide">
-              Admin Panel
-            </span>
           </Link>
           {/* Close button (mobile only) */}
           <button
