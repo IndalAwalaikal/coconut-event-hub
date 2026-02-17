@@ -24,7 +24,6 @@ import {
   Filter,
   Sparkles,
   Eye,
-  TrendingUp,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,13 +33,6 @@ type Poster = {
   type: string;
   image?: string;
   date?: string;
-};
-
-const typeIcons: Record<string, any> = {
-  "Open Class": ImageIcon,
-  Webinar: ImageIcon,
-  Seminar: ImageIcon,
-  Bootcamp: ImageIcon,
 };
 
 const AdminPosters = () => {
@@ -59,7 +51,6 @@ const AdminPosters = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedPoster, setSelectedPoster] = useState<Poster | null>(null);
   const { toast } = useToast();
-
   const token = localStorage.getItem("admin_token") || "";
 
   const fetchPosters = async () => {
@@ -69,7 +60,6 @@ const AdminPosters = () => {
       const data = await res.json();
       if (Array.isArray(data)) setPosters(data);
     } catch (e) {
-      console.warn(e);
       toast({
         title: "Error",
         description: "Gagal memuat data poster",
@@ -100,27 +90,21 @@ const AdminPosters = () => {
     fd.append("type", typeVal);
     fd.append("date", date);
     if (file) fd.append("image", file);
-
     const url = editingId
       ? `${API}/api/admin/posters/${editingId}`
       : `${API}/api/admin/posters`;
-    const method = editingId ? "PUT" : "POST";
-
     try {
       const res = await fetch(url, {
-        method,
+        method: editingId ? "PUT" : "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
       });
-      if (!res.ok) {
+      if (!res.ok)
         throw new Error(
-          editingId ? "Gagal mengupdate poster" : "Gagal membuat poster",
+          editingId ? "Gagal mengupdate" : "Gagal membuat poster",
         );
-      }
       toast({
-        title: editingId
-          ? "✅ Poster Berhasil Diupdate"
-          : "✅ Poster Berhasil Dibuat",
+        title: editingId ? "✅ Poster Diupdate" : "✅ Poster Dibuat",
         duration: 3000,
       });
       resetForm();
@@ -142,14 +126,8 @@ const AdminPosters = () => {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) {
-        throw new Error("Gagal menghapus poster");
-      }
-      toast({
-        title: "🗑️ Poster Dihapus",
-        description: "Poster berhasil dihapus.",
-        duration: 3000,
-      });
+      if (!res.ok) throw new Error("Gagal menghapus poster");
+      toast({ title: "🗑️ Poster Dihapus", duration: 3000 });
       fetchPosters();
     } catch (err) {
       toast({
@@ -160,28 +138,8 @@ const AdminPosters = () => {
     }
   };
 
-  const handleAddNew = () => {
-    resetForm();
-    setDialogOpen(true);
-  };
-
-  const handleEditPoster = (p: Poster) => {
-    setEditingId(p.id);
-    setTitle(p.title || "");
-    setTypeVal(p.type || "");
-    setDate(p.date || "");
-    setDialogOpen(true);
-  };
-
-  const handleViewPoster = (p: Poster) => {
-    setSelectedPoster(p);
-    setViewDialogOpen(true);
-  };
-
-  // Filter posters
   const normalizeType = (s?: string) =>
     (s || "").toString().toLowerCase().replace(/[-_]/g, " ").trim();
-
   const filteredPosters = posters.filter((p) => {
     const q = searchQuery.toLowerCase();
     const matchSearch =
@@ -193,138 +151,126 @@ const AdminPosters = () => {
     return matchSearch && matchType;
   });
 
-  // Stats
   const totalPosters = posters.length;
   const posterTypes = [...new Set(posters.map((p) => p.type))];
 
   return (
-    <div className="space-y-6">
-      {/* Header Section with Gradient Background */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1628] via-[#0d2847] to-[#1e3a5f] p-8">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzYjgyZjYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNk0yNCA0MGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTYiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20" />
-
-        {/* Glowing Orbs */}
+    <div className="space-y-5 md:space-y-6">
+      {/* ── Header ── */}
+      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-[#0a1628] via-[#0d2847] to-[#1e3a5f] p-5 sm:p-6 md:p-8">
+        <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzYjgyZjYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNk0yNCA0MGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTYiLz48L2c+PC9nPjwvc3ZnPg==')]" />
         <div className="absolute -right-20 top-0 h-48 w-48 rounded-full bg-gradient-to-br from-[#3b82f6]/20 to-[#60a5fa]/20 blur-3xl" />
         <div className="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-gradient-to-br from-[#0ea5e9]/20 to-[#38bdf8]/20 blur-3xl" />
-
         <div className="relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles
-                  className="h-5 w-5 text-[#60a5fa]"
+                  className="h-4 w-4 text-[#60a5fa]"
                   style={{
-                    filter: "drop-shadow(0 0 8px rgba(96, 165, 250, 0.6))",
+                    filter: "drop-shadow(0 0 8px rgba(96,165,250,0.6))",
                   }}
                 />
-                <span className="text-sm font-semibold text-[#60a5fa]">
+                <span className="text-xs sm:text-sm font-semibold text-[#60a5fa]">
                   Poster Management
                 </span>
               </div>
               <h1
-                className="font-display text-3xl md:text-4xl font-bold text-white mb-2"
-                style={{ textShadow: "0 0 30px rgba(255, 255, 255, 0.3)" }}
+                className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2"
+                style={{ textShadow: "0 0 30px rgba(255,255,255,0.3)" }}
               >
                 Kelola Posters
               </h1>
-              <p className="text-gray-300">
+              <p className="text-gray-300 text-xs sm:text-sm">
                 Tambah, edit, dan kelola poster event COCONUT
               </p>
             </div>
-
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button
-                  size="lg"
-                  onClick={handleAddNew}
-                  className="bg-white text-[#2563eb] hover:bg-gray-50 font-semibold px-6 transition-all hover:scale-105 border-0"
-                  style={{ boxShadow: "0 0 30px rgba(255, 255, 255, 0.3)" }}
+                  onClick={() => {
+                    resetForm();
+                    setDialogOpen(true);
+                  }}
+                  className="bg-white text-[#2563eb] hover:bg-gray-50 font-semibold transition-all hover:scale-105 border-0 w-full sm:w-auto"
+                  style={{ boxShadow: "0 0 30px rgba(255,255,255,0.3)" }}
                 >
-                  <Plus className="mr-2 h-5 w-5" /> Tambah Poster
+                  <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Tambah Poster
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+              <DialogContent className="max-h-[90vh] overflow-y-auto w-[95vw] sm:max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle className="font-display text-2xl bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] bg-clip-text text-transparent">
+                  <DialogTitle className="font-display text-xl sm:text-2xl bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] bg-clip-text text-transparent">
                     {editingId ? "Edit Poster" : "Tambah Poster Baru"}
                   </DialogTitle>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {editingId
-                      ? "Perbarui informasi poster"
-                      : "Lengkapi form untuk menambahkan poster baru"}
-                  </p>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-5 mt-6">
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    {/* Title */}
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4 sm:space-y-5 mt-4 sm:mt-6"
+                >
+                  <div className="grid gap-4 sm:gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <Tag className="h-4 w-4" />
-                        Judul Poster <span className="text-red-500">*</span>
+                        Judul Poster *
                       </Label>
                       <Input
                         placeholder="Masukkan judul poster"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         required
-                        className="border-gray-300 focus:border-[#3b82f6] focus:ring-[#3b82f6]"
                       />
                     </div>
-
-                    {/* Type */}
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <Filter className="h-4 w-4" />
-                        Tipe Event <span className="text-red-500">*</span>
+                        Tipe Event *
                       </Label>
                       <select
-                        className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 transition-all bg-white text-gray-900"
+                        className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 bg-white text-gray-900 text-sm"
                         value={typeVal}
                         onChange={(e) => setTypeVal(e.target.value)}
                         required
                       >
-                        <option value="">Pilih Tipe Poster</option>
-                        <option value="Open Class">Open Class</option>
-                        <option value="Webinar">Webinar</option>
-                        <option value="Seminar">Seminar</option>
-                        <option value="Bootcamp">Bootcamp</option>
+                        <option value="">Pilih Tipe</option>
+                        {["Open Class", "Webinar", "Seminar", "Bootcamp"].map(
+                          (t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ),
+                        )}
                       </select>
                     </div>
                   </div>
-
-                  {/* Date */}
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Tanggal <span className="text-red-500">*</span>
+                      Tanggal *
                     </Label>
                     <Input
                       placeholder="Contoh: 15 Maret 2025"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       required
-                      className="border-gray-300 focus:border-[#3b82f6] focus:ring-[#3b82f6]"
                     />
                   </div>
-
-                  {/* File Upload */}
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Upload className="h-4 w-4" />
                       Upload Gambar Poster{" "}
                       {!editingId && <span className="text-red-500">*</span>}
                     </Label>
-                    <label className="group flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 transition-all hover:border-[#3b82f6] hover:bg-blue-50">
-                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-white border-2 border-gray-200 group-hover:border-[#3b82f6] group-hover:bg-blue-50 transition-all">
-                        <Upload className="h-7 w-7 text-gray-400 group-hover:text-[#3b82f6] transition-colors" />
+                    <label className="group flex cursor-pointer items-center gap-3 sm:gap-4 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:p-6 transition-all hover:border-[#3b82f6] hover:bg-blue-50">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white border-2 border-gray-200 group-hover:border-[#3b82f6]">
+                        <Upload className="h-6 w-6 text-gray-400 group-hover:text-[#3b82f6]" />
                       </div>
-                      <div className="flex-1 text-left">
-                        <p className="text-sm font-semibold text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
                           {fileName || "Klik untuk upload gambar"}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          JPG, PNG • Rasio 3:4 (Portrait) • Maksimal 5MB
+                          JPG, PNG • Rasio 3:4 • Maks 5MB
                         </p>
                       </div>
                       <input
@@ -340,8 +286,7 @@ const AdminPosters = () => {
                       />
                     </label>
                   </div>
-
-                  <div className="flex justify-end gap-3 pt-6 border-t">
+                  <div className="flex justify-end gap-2 sm:gap-3 pt-4 border-t">
                     <Button
                       type="button"
                       variant="outline"
@@ -349,13 +294,12 @@ const AdminPosters = () => {
                         setDialogOpen(false);
                         resetForm();
                       }}
-                      className="px-6"
                     >
                       Batal
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] text-white border-0 px-6 font-semibold"
+                      className="bg-gradient-to-r from-[#3b82f6] to-[#2563eb] text-white border-0 font-semibold"
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       {editingId ? "Update" : "Simpan"}
@@ -366,61 +310,56 @@ const AdminPosters = () => {
             </Dialog>
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
-              <div className="text-2xl font-bold text-white">
-                {totalPosters}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4 sm:mt-6">
+            {[
+              { label: "Total Poster", value: totalPosters },
+              { label: "Tipe Event", value: posterTypes.length },
+              { label: "Ditampilkan", value: filteredPosters.length },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="text-center p-2 sm:p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20"
+              >
+                <div className="text-xl sm:text-2xl font-bold text-white">
+                  {s.value}
+                </div>
+                <div className="text-[10px] sm:text-xs text-gray-300 mt-0.5 sm:mt-1">
+                  {s.label}
+                </div>
               </div>
-              <div className="text-xs text-gray-300 mt-1">Total Poster</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
-              <div className="text-2xl font-bold text-white">
-                {posterTypes.length}
-              </div>
-              <div className="text-xs text-gray-300 mt-1">Tipe Event</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
-              <div className="text-2xl font-bold text-white">
-                {filteredPosters.length}
-              </div>
-              <div className="text-xs text-gray-300 mt-1">Ditampilkan</div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Filter & Search Section */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4">
-          {/* Search Bar */}
-          <div className="relative flex-1">
+      {/* ── Filter ── */}
+      <div className="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Cari poster berdasarkan judul atau tipe..."
+              placeholder="Cari poster..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-gray-300 focus:border-[#3b82f6] focus:ring-[#3b82f6]"
+              className="pl-10"
             />
           </div>
-
-          {/* Type Filter */}
           <div>
-            <Label className="text-xs font-semibold text-gray-500 uppercase mb-2 block">
+            <Label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase mb-2 block">
               Tipe Event
             </Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               <Button
                 variant={filterType === "" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterType("")}
                 className={
                   filterType === ""
-                    ? "bg-gradient-to-r from-[#3b82f6] to-[#2563eb] border-0"
-                    : ""
+                    ? "bg-gradient-to-r from-[#3b82f6] to-[#2563eb] border-0 text-xs"
+                    : "text-xs"
                 }
               >
-                Semua Tipe
+                Semua
               </Button>
               {["Open Class", "Webinar", "Seminar", "Bootcamp"].map((type) => (
                 <Button
@@ -430,8 +369,8 @@ const AdminPosters = () => {
                   onClick={() => setFilterType(type)}
                   className={
                     filterType === type
-                      ? "bg-gradient-to-r from-[#3b82f6] to-[#2563eb] border-0"
-                      : ""
+                      ? "bg-gradient-to-r from-[#3b82f6] to-[#2563eb] border-0 text-xs"
+                      : "text-xs"
                   }
                 >
                   {type}
@@ -440,40 +379,36 @@ const AdminPosters = () => {
             </div>
           </div>
         </div>
-
-        {/* Results Count */}
-        <div className="mt-4 flex items-center gap-2 text-sm text-gray-600 pt-4 border-t">
+        <div className="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-gray-600 pt-3 sm:pt-4 border-t">
           <Filter className="h-4 w-4" />
           <span>
-            Menampilkan{" "}
-            <strong className="text-gray-900">{filteredPosters.length}</strong>{" "}
-            poster
+            Menampilkan <strong>{filteredPosters.length}</strong> poster
           </span>
         </div>
       </div>
 
-      {/* Table Section */}
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      {/* ── Table ── */}
+      <div className="rounded-xl sm:rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[440px]">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   #
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Poster
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Tipe Event
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider hidden sm:table-cell">
+                  Tipe
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell">
                   Tanggal
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Preview
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -483,8 +418,8 @@ const AdminPosters = () => {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3b82f6]"></div>
-                      <p className="text-gray-600">Memuat poster...</p>
+                      <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-[#3b82f6]" />
+                      <p className="text-gray-600 text-sm">Memuat poster...</p>
                     </div>
                   </td>
                 </tr>
@@ -494,37 +429,37 @@ const AdminPosters = () => {
                     key={p.id}
                     className="group hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500 font-medium">
                       {idx + 1}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#2563eb] text-white font-semibold text-sm shadow-md group-hover:scale-110 transition-transform">
-                          <ImageIcon className="h-5 w-5" />
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#2563eb] text-white shadow-md group-hover:scale-110 transition-transform flex-shrink-0">
+                          <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
-                        <div className="max-w-md">
-                          <p className="font-semibold text-gray-900 group-hover:text-[#2563eb] transition-colors">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-xs sm:text-sm text-gray-900 group-hover:text-[#2563eb] transition-colors truncate max-w-[100px] sm:max-w-[160px] md:max-w-none">
                             {p.title}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5 font-mono truncate">
+                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 font-mono truncate hidden sm:block">
                             ID: {p.id}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <Badge className="bg-[#3b82f6]/10 text-[#2563eb] border-0 font-medium">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
+                      <Badge className="bg-[#3b82f6]/10 text-[#2563eb] border-0 font-medium text-xs">
                         {p.type}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-4 w-4 text-gray-400" />
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
+                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-600">
+                        <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                         {p.date}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="w-16 h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <div className="w-10 h-12 sm:w-16 sm:h-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
                         <img
                           src={mediaUrl(p.image || "/placeholder.svg")}
                           alt={p.title}
@@ -536,51 +471,55 @@ const AdminPosters = () => {
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <div className="flex items-center gap-0.5 sm:gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleViewPoster(p)}
-                          className="h-8 w-8 p-0 hover:bg-[#3b82f6]/10 hover:text-[#2563eb] transition-colors"
-                          title="Lihat Detail"
+                          onClick={() => {
+                            setSelectedPoster(p);
+                            setViewDialogOpen(true);
+                          }}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-[#3b82f6]/10 hover:text-[#2563eb]"
+                          title="Lihat"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
                             navigator.clipboard.writeText(p.id);
-                            toast({
-                              title: "✅ ID Disalin",
-                              description:
-                                "ID poster berhasil disalin ke clipboard",
-                              duration: 2000,
-                            });
+                            toast({ title: "✅ ID Disalin", duration: 2000 });
                           }}
-                          className="h-8 w-8 p-0 hover:bg-[#3b82f6]/10 hover:text-[#2563eb] transition-colors"
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-[#3b82f6]/10 hover:text-[#2563eb]"
                           title="Copy ID"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditPoster(p)}
-                          className="h-8 w-8 p-0 hover:bg-[#3b82f6]/10 hover:text-[#2563eb] transition-colors"
+                          onClick={() => {
+                            setEditingId(p.id);
+                            setTitle(p.title || "");
+                            setTypeVal(p.type || "");
+                            setDate(p.date || "");
+                            setDialogOpen(true);
+                          }}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-[#3b82f6]/10 hover:text-[#2563eb]"
                           title="Edit"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(p.id)}
-                          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-red-50 hover:text-red-600"
                           title="Hapus"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                       </div>
                     </td>
@@ -593,23 +532,21 @@ const AdminPosters = () => {
                       <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
                         <ImageIcon className="h-8 w-8 text-gray-400" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          Tidak ada poster ditemukan
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {searchQuery || filterType
-                            ? "Coba ubah filter atau kata kunci pencarian"
-                            : "Belum ada poster. Klik tombol di atas untuk menambahkan."}
-                        </p>
-                      </div>
+                      <p className="font-semibold text-gray-900">
+                        Tidak ada poster ditemukan
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {searchQuery || filterType
+                          ? "Coba ubah filter"
+                          : "Belum ada poster."}
+                      </p>
                       {(searchQuery || filterType) && (
                         <Button
                           onClick={() => {
                             setSearchQuery("");
                             setFilterType("");
                           }}
-                          className="mt-2 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] text-white font-semibold"
+                          className="mt-2 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] text-white font-semibold text-sm"
                         >
                           Reset Filter
                         </Button>
@@ -623,70 +560,58 @@ const AdminPosters = () => {
         </div>
       </div>
 
-      {/* View Detail Dialog */}
+      {/* View Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto w-[95vw] sm:max-w-2xl">
           {selectedPoster && (
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge className="bg-[#3b82f6]/10 text-[#2563eb] border-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Badge className="bg-[#3b82f6]/10 text-[#2563eb] border-0 text-xs">
                     {selectedPoster.type}
                   </Badge>
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="text-xs">
                     <Calendar className="h-3 w-3 mr-1" />
                     {selectedPoster.date}
                   </Badge>
                 </div>
-                <DialogTitle className="font-display text-2xl md:text-3xl bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] bg-clip-text text-transparent">
+                <DialogTitle className="font-display text-xl sm:text-2xl md:text-3xl bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] bg-clip-text text-transparent">
                   {selectedPoster.title}
                 </DialogTitle>
               </DialogHeader>
-
-              <div className="space-y-6 mt-6">
-                {/* Poster Image */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5 text-[#2563eb]" />
-                    Preview Poster
-                  </h3>
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
-                    <img
-                      src={mediaUrl(selectedPoster.image || "/placeholder.svg")}
-                      alt={selectedPoster.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
+              <div className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+                <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                  <img
+                    src={mediaUrl(selectedPoster.image || "/placeholder.svg")}
+                    alt={selectedPoster.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
+                  />
                 </div>
-
-                {/* Poster Info */}
-                <div className="space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-2 p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs sm:text-sm">
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Poster ID</p>
-                    <p className="text-sm font-mono text-gray-700">
+                    <p className="text-gray-500 mb-0.5">Poster ID</p>
+                    <p className="font-mono text-gray-700 break-all">
                       {selectedPoster.id}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Tipe Event</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-gray-500 mb-0.5">Tipe Event</p>
+                    <p className="font-semibold text-gray-900">
                       {selectedPoster.type}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Tanggal</p>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-gray-500 mb-0.5">Tanggal</p>
+                    <p className="font-semibold text-gray-900">
                       {selectedPoster.date}
                     </p>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t">
                   <Button
                     variant="outline"
                     onClick={() => setViewDialogOpen(false)}
@@ -697,9 +622,13 @@ const AdminPosters = () => {
                   <Button
                     onClick={() => {
                       setViewDialogOpen(false);
-                      handleEditPoster(selectedPoster);
+                      setEditingId(selectedPoster.id);
+                      setTitle(selectedPoster.title || "");
+                      setTypeVal(selectedPoster.type || "");
+                      setDate(selectedPoster.date || "");
+                      setDialogOpen(true);
                     }}
-                    className="flex-1 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] text-white border-0"
+                    className="flex-1 bg-gradient-to-r from-[#3b82f6] to-[#2563eb] text-white border-0"
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Poster
