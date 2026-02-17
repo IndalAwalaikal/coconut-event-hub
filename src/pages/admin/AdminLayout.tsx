@@ -97,25 +97,32 @@ const AdminLayout = () => {
         </div>
 
         {/* Logo */}
-        <div className="relative border-b border-white/10 p-5 backdrop-blur-sm flex items-center justify-between">
+        <div className="relative border-b border-white/10 py-6 px-5 backdrop-blur-sm flex items-center justify-center">
+          {/* Close button (mobile only) — absolute so logo stays centered */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
           <Link
             to="/"
-            className="group flex items-center gap-3 transition-all hover:scale-105"
+            className="group flex flex-col items-center gap-2 transition-all hover:scale-105"
           >
             <img
               src="/logo.png"
               alt="COCONUT CC"
-              className="h-12 w-auto object-contain transition-all duration-300 group-hover:scale-110"
-              style={{ filter: "drop-shadow(0 0 12px rgba(96,165,250,0.4))" }}
+              className="h-20 w-auto object-contain transition-all duration-300 group-hover:scale-110"
+              style={{
+                filter:
+                  "drop-shadow(0 0 16px rgba(96,165,250,0.5)) drop-shadow(0 0 6px rgba(255,255,255,0.15))",
+              }}
             />
+            <span className="text-xs font-bold text-gray-300 group-hover:text-white transition-colors tracking-widest uppercase">
+              Admin Panel
+            </span>
           </Link>
-          {/* Close button (mobile only) */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
         {/* Nav Links */}
