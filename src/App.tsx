@@ -28,7 +28,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Index />} />
             <Route path="/events" element={<Events />} />
@@ -38,9 +37,9 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
           </Route>
 
-          {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<NotFound />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="events" element={<AdminEvents />} />
             <Route path="registrants" element={<AdminRegistrants />} />
